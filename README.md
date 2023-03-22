@@ -138,9 +138,4 @@ Cite this repo if you want to, or don't, both are fine.
 }
 ```
 
-Naturally, you should also cite the original LLaMA paper [1] and the Self-Instruct paper [2] and the Stanford Alpaca repo [3].
-
-### Acknowledgements
-
-We thank Yizhong Wang for his help in explaining the data generation pipeline in Self-Instruct and providing the code for the parse analysis plot.
-We thank Yifan Mai for helpful support, and members of the Stanford NLP Group as well as the Center for Research on Foundation Models (CRFM) for their helpful feedback.
+Naturally, you should also cite the original LLaMA paper [1] and the Self-Instruct paper [2] and the [Stanford Alpaca repo](https://github.com/tatsu-lab/stanford_alpaca).
