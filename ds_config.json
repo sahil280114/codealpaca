@@ -1,0 +1,45 @@
+{
+    "zero_optimization": {
+        "stage": 3,
+        "contiguous_gradients": true,
+        "stage3_max_live_parameters": 0,
+        "stage3_max_reuse_distance": 0,
+        "stage3_prefetch_bucket_size": 0,
+        "stage3_param_persistence_threshold": 100,
+        "reduce_bucket_size": 100,
+        "sub_group_size": 100000000,
+        "offload_optimizer": {
+            "device": "cpu",
+            "pin_memory": true
+        },
+        "offload_param": {
+            "device": "cpu",
+            "pin_memory": true
+        },
+        "stage3_gather_16bit_weights_on_model_save": true
+    },
+    "optimizer": {
+        "type": "Adam",
+        "params": {
+            "lr": 0.00002,
+            "betas": [
+                0.9,
+                0.999
+            ],
+            "eps": 1e-8,
+            "weight_decay": 0
+        }
+    },
+    "fp16": {
+        "enabled": true,
+        "auto_cast": false,
+        "loss_scale": 0,
+        "initial_scale_power": 32,
+        "loss_scale_window": 1000,
+        "hysteresis": 2,
+        "min_loss_scale": 1
+    },
+    "train_batch_size": "auto",
+    "train_micro_batch_size_per_gpu": "auto",
+    "wall_clock_breakdown": false
+}
