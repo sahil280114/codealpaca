@@ -123,6 +123,7 @@ torchrun --nproc_per_node=8 --master_port=<your_random_port> train.py \
 
 Note the given training script is meant to be simple and easy to use, and is not particularly optimized.
 
+For convenience I have included the [`convert_to_hf.py`](./convert_to_hf.py) to covnert llama checkpoints to huggingface compatible checkpoints. (This file is taken from the hugginface transformers repo)
 
 ### Citation
 
