@@ -85,7 +85,7 @@ Finetuned the models using standard Hugging Face training code and deepspeed wit
 Given Hugging Face hasn't officially supported the LLaMA models, we fine-tuned LLaMA with Hugging Face's transformers library by installing it from a particular fork (i.e. this [PR](https://github.com/huggingface/transformers/pull/21955) to be merged).
 The hash of the specific commit we installed was `68d640f7c368bcaaaecfc678f11908ebbd3d6176`.
 
-The code runs on a 8xA100 80GB, but can also run on 8xA10040GB or 4xA100 with lower batch size and gradient accumulation steps.
+The code runs on a 8xA100 80GB, but can also run on 8xA10040GB or 4xA100 with lower batch size and gradient accumulation steps. To get the GPUs, I suggest using [Lambda Labs](https://cloud.lambdalabs.com/login?redirect_to=/instances?), best pricing for the best hardware.
 
 To reproduce the fine-tuning runs for LLaMA, first install the requirements 
 ```bash
