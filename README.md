@@ -70,23 +70,24 @@ Data generation pipeline had minor changes from [Stanford Alpaca](https://github
 - Modified prompt to focus on code generation/editing/optimization tasks instead of general tasks.
 - Modified seed tasks to only be related to code generation.
 
-This produced an instruction-following dataset with 20K examples obtained at a much lower cost (less than $200). 
+This produced an instruction-following dataset with 20K examples obtained at a much lower cost (less than $200). Also including a smaller 2k samples dataset which was used to derisk the approach and quality of the model.
 
 ## Fine-tuning
-We fine-tune our models using standard Hugging Face training code with the following hyperparameters:
+Finetuned the models using standard Hugging Face training code and deepspeed with the following hyperparameters:
 
 | Hyperparameter | Value |
 |----------------|-------|
-| Batch size     | 128   |
 | Learning rate  | 2e-5  |
 | Epochs         | 3     |
 | Max length     | 512   |
- | Weight decay   | 0     |
+| Weight decay   | 0     |
 
 Given Hugging Face hasn't officially supported the LLaMA models, we fine-tuned LLaMA with Hugging Face's transformers library by installing it from a particular fork (i.e. this [PR](https://github.com/huggingface/transformers/pull/21955) to be merged).
 The hash of the specific commit we installed was `68d640f7c368bcaaaecfc678f11908ebbd3d6176`.
 
-To reproduce our fine-tuning runs for LLaMA, first install the requirements 
+The code runs on a 8xA100 80GB, but can also run on 8xA10040GB or 4xA100 with lower batch size and gradient accumulation steps.
+
+To reproduce the fine-tuning runs for LLaMA, first install the requirements 
 ```bash
 pip install -r requirements.txt
 ```
@@ -98,93 +99,46 @@ Replace `<your_random_port>` with a port of your own, `<your_path_to_hf_converte
 path to your converted checkpoint and tokenizer (following instructions in the PR), and `<your_output_dir>` with where you want to store your outputs.
 
 ```bash
-torchrun --nproc_per_node=4 --master_port=<your_random_port> train.py \
-    --model_name_or_path <your_path_to_hf_converted_llama_ckpt_and_tokenizer> \
-    --data_path ./alpaca_data.json \
-    --bf16 True \
+torchrun --nproc_per_node=8 --master_port=<your_random_port> train.py \
+    --model_name_or_path <your_path_to_hf_converted_llama_ckpt_and_tokenizer>
+    --data_path ./data/code_alpaca_20k.json \
+    --fp16 True \
     --output_dir <your_output_dir> \
     --num_train_epochs 3 \
-    --per_device_train_batch_size 4 \
-    --per_device_eval_batch_size 4 \
+    --per_device_train_batch_size 8 \
+    --per_device_eval_batch_size 8 \
     --gradient_accumulation_steps 8 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
-    --save_steps 2000 \
+    --save_steps 500 \
     --save_total_limit 1 \
     --learning_rate 2e-5 \
     --weight_decay 0. \
     --warmup_ratio 0.03 \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
-    --fsdp "full_shard auto_wrap" \
-    --fsdp_transformer_layer_cls_to_wrap 'LLaMADecoderLayer' \
-    --tf32 True
-```
-
-### Warning
-`fsdp_transformer_layer_cls_to_wrap` must be set to the name of the specific decoder layer. 
-The LLaMA Hugging Face PR is not stable. 
-Earlier commits used the name `LLaMADecoderLayer` for their decoder layer (the commit hash our code is based on this). 
-More recent commits use `LlamaDecoderLayer` (notice the small case difference).
-Not setting `fsdp_transformer_layer_cls_to_wrap` to the correct name will lead to drastic slowdowns in training.
-
-### Side notes
-
-The same script also works for OPT fine-tuning. Here's an example for fine-tuning OPT-6.7B
-
-```bash
-torchrun --nproc_per_node=4 --master_port=<your_random_port> train.py \
-    --model_name_or_path "facebook/opt-6.7b" \
-    --data_path ./alpaca_data.json \
-    --bf16 True \
-    --output_dir <your_output_dir> \
-    --num_train_epochs 3 \
-    --per_device_train_batch_size 4 \
-    --per_device_eval_batch_size 4 \
-    --gradient_accumulation_steps 8 \
-    --evaluation_strategy "no" \
-    --save_strategy "steps" \
-    --save_steps 2000 \
-    --save_total_limit 1 \
-    --learning_rate 2e-5 \
-    --weight_decay 0. \
-    --warmup_ratio 0.03 \
-    --lr_scheduler_type "cosine" \
-    --logging_steps 1 \
-    --fsdp "full_shard auto_wrap" \
-    --fsdp_transformer_layer_cls_to_wrap 'OPTDecoderLayer' \
-    --tf32 True
+    --deepspeed ds_config.json
+    --tf32 False
 ```
 
 Note the given training script is meant to be simple and easy to use, and is not particularly optimized.
-To run on more gpus, you may prefer to turn down `gradient_accumulation_steps` to keep a global batch size of 128. Global batch size has not been tested for optimality.
 
-### Authors
-All grad students below contributed equally and the order is determined by random draw.
-
-- [Rohan Taori](https://www.rohantaori.com/)
-- [Ishaan Gulrajani](https://ishaan.io/)
-- [Tianyi Zhang](https://tiiiger.github.io/)
-- [Yann Dubois](https://yanndubs.github.io/)
-- [Xuechen Li](https://www.lxuechen.com/)
-
-All advised by [Tatsunori B. Hashimoto](https://thashim.github.io/). Yann is also advised by [Percy Liang](https://cs.stanford.edu/~pliang/) and Xuechen is also advised by [Carlos Guestrin](https://guestrin.su.domains/).
 
 ### Citation
 
-Please cite the repo if you use the data or code in this repo.
+Cite this repo if you want to, or don't, both are fine.
 ```
-@misc{alpaca,
-  author = {Rohan Taori and Ishaan Gulrajani and Tianyi Zhang and Yann Dubois and Xuechen Li and Carlos Guestrin and Percy Liang and Tatsunori B. Hashimoto },
-  title = {Stanford Alpaca: An Instruction-following LLaMA model},
+@misc{codealpaca,
+  author = {Sahil Chaudhary},
+  title = {Code Alpaca: An Instruction-following LLaMA model for code generation},
   year = {2023},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{https://github.com/tatsu-lab/stanford_alpaca}},
+  howpublished = {\url{https://github.com/sahil280114/codealpaca}},
 }
 ```
 
-Naturally, you should also cite the original LLaMA paper [1] and the Self-Instruct paper [2].
+Naturally, you should also cite the original LLaMA paper [1] and the Self-Instruct paper [2] and the Stanford Alpaca repo [3].
 
 ### Acknowledgements
 
