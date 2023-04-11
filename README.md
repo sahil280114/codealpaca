@@ -93,8 +93,8 @@ pip install -r requirements.txt
 ```
 Then, install the particular fork of Hugging Face's transformers library.
 
-Below is a command that fine-tunes LLaMA-7B with our dataset on a machine with 4 A100 80G GPUs in FSDP `full_shard` mode. 
-We were able to reproduce a model of similar quality as the one we hosted in our demo with the following command using **Python 3.10**.
+Below is a command that fine-tunes LLaMA-7B with our dataset on a machine with 4 A100 80G GPUs using deepspeed. 
+
 Replace `<your_random_port>` with a port of your own, `<your_path_to_hf_converted_llama_ckpt_and_tokenizer>` with the 
 path to your converted checkpoint and tokenizer (following instructions in the PR), and `<your_output_dir>` with where you want to store your outputs.
 
